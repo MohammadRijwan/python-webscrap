@@ -1,0 +1,430 @@
+Adding a post
+
+You can add a post for a blog by sending a POST request to the post collection URI with a post JSON body:
+
+https://www.googleapis.com/blogger/v3/blogs/blogId/posts/
+
+Request
+
+POST https://www.googleapis.com/blogger/v3/blogs/8070105920543249955/posts/
+Authorization: /* OAuth 2.0 token here */
+Content-Type: application/json
+
+{
+  "kind": "blogger#post",
+  "blog": {
+    "id": "8070105920543249955"
+  },
+  "title": "A new post",
+  "content": "With <b>exciting</b> content..."
+}
+
+You must be authenticated to create a post.
+
+
+
+==========================================================
+
+
+
+Publishing a blog post
+
+You can use the Python client library to publish new blog entries.
+
+First, create a GDataEntry instance to represent the blog post. Then you can set the title, content and other attributes of the blog post. Finally, use the GDataService instance to insert the post. Here's an example of how to publish a new blog post:
+
+
+
+def CreatePublicPost(blogger_service, blog_id, title, content):
+  entry = gdata.GDataEntry()
+  entry.title = atom.Title('xhtml', title)
+  entry.content = atom.Content(content_type='html', text=content)
+  return blogger_service.Post(entry, '/feeds/%s/posts/default' % blog_id)
+
+blogEntry = CreatePublicPost(https://cloud.google.com/resource-manager/img/project_id.png?refresh=1blogger_service, blog_id,
+    title='I have the answer', content='Eureka! It is 42!')
+
+
+==================================================================
+
+
+Creating a draft blog post
+
+Draft posts are created in the same way as public posts, but you need to set the draft extension element in the GDataEntry instance. The blog post above could be created as a draft by adding the highlighted lines:
+
+
+def CreateDraftPost(blogger_service, blog_id, title, content):
+  entry = gdata.GDataEntry()
+  entry.title = atom.Title('xhtml', title)
+  entry.content = atom.Content(content_type='html', text=content)
+
+  control = atom.Control()
+  control.draft = atom.Draft(text='yes')
+  entry.control = control
+
+  return blogger_service.Post(entry, '/feeds/%s/posts/default' % blog_id)
+
+draftEntry = CreateDraftPost(blogger_service, blog_id,
+    title='I have the question',
+    content='What do you get if you multiply six by nine?')
+
+
+
+=================================================================
+
+
+Retrieving posts
+
+The following sections describe how to retrieve a list of blog posts, with and without query parameters.
+
+    Resource Manager
+    Documentation 
+
+Creating and Managing Projects
+
+Google Cloud Platform (GCP) projects form the basis for creating, enabling, and using all GCP services including managing APIs, enabling billing, adding and removing collaborators, and managing permissions for GCP resources.
+
+This page explains how to create and manage GCP projects using the Resource Manager API and the Google Cloud Platform Console.
+Before you begin
+
+Read about the project resource in the Resource Hierarchy overview.
+Creating a project
+
+To create a project, you must have the resourcemanager.projects.create permission. When an organization is created, the entire domain has the Project Creator role, which includes that permission. For information on how to grant individuals the Project Creator role and limit organization-wide access, see the Managing Default Organization Roles page.
+
+You can create a new project using the GCP Console or the projects.create() method.
+Console gcloud API PYTHON
+
+You can't use certain words in the project ID when you create a new project with the projects.create() method. Some examples include ssl and google. When you use a restricted word, the request will return with an INVALID_ARGUMENT error.
+
+The below request only creates a project, and does not associate it automatically with a billing account. Use the projects.updateBillingInfo method to set or update the billing account associated with a project.
+
+Create Project Request:
+
+POST https://cloudresourcemanager.googleapis.com/v1/projects/
+Authorization: *************
+Content-Type: application/json
+
+{
+    "projectId": "our-project-123",
+    "name": "my project",
+    "labels": {
+      "mylabel": "prod"
+    }
+}
+
+Create Project Response:
+
+{
+    "name": "operations/pc.123456789",
+}
+
+Get Operation Request:
+
+GET https://cloudresourcemanager.googleapis.com/v1/operations/pc.123456789
+Authorization: *************
+Content-Type: application/json
+
+Get Operation Response:
+
+{
+    "name": "operations/pc.123456789",
+    "done": true,
+    "response": {
+        "@type": "type.googleapis.com/google.cloudresourcemanager.v1.Project",
+        "projectNumber": "464036093014",
+        "projectId": "our-project-123",
+        "lifecycleState": "ACTIVE",
+        "name": "my project",
+        "labels": {
+        "mylabel": "prod"
+        },
+    "createTime": "2016-01-07T21:59:43.314Z"
+    }
+}
+
+Managing project quotas
+
+If you have fewer than 30 projects remaining in your quota, a notification will display the number of projects remaining in your quota on the New Project page. Projects that users have soft deleted will count against your quota until those projects have been fully deleted after 30 days.
+
+To request additional capacity for projects in your quota, see the Request Billing Quota Increase support page. More information about quotas and why they are used can be found at the Free Trial Project Quota Requests support page.
+Identifying projects
+
+To interact with GCP resources, you must provide the identifying project information for every request. A project can be identified in the following ways:
+
+    Project ID: the customized name you chose when you created the project, or when you activated an API that required you to create a project ID. Note that you can't reuse the project ID of a deleted project.
+    Project number: a number that's automatically generated by the server and assigned to your project.
+
+To get the project ID and the project number:
+
+    Go to the Manage resources page in the GCP Console.
+    Select your project.
+
+Both the project ID and project number are displayed on the project Dashboard Project info card:
+
+A project ID is different from a project name. The project name is a human-readable way to identify your projects, but it isn't used by any Google APIs. In the above example, the project name is My Sample Project and the project ID is my-sample-project-191923.
+
+The project ID is generated from the project name you enter when you create the project in the Google Cloud Platform Console. Certain words are restricted from use in project IDs. If you use restricted words in the project name, such as google or ssl, the generated project ID will not include these words. This will not affect the project name.
+
+The project number and project ID are unique across Google Cloud Platform. If another user owns a project ID for their project, you won't be able to use the same project ID.
+
+When you choose your project ID (or any resource names), don't include any sensitive information in your names.
+Get an existing project
+
+You can get an existing project using the GCP Console or the projects.get() method.
+Console gcloud API PYTHON
+
+Request:
+
+GET
+https://cloudresourcemanager.google
+
+You can query a Blogger public feed without authentication. Therefore, you don't need to set credentials or do AuthSub authentication before retrieving posts from a public blog.
+Retrieving all blog posts
+
+To retrieve the user's posts, call the GetFeed method with the blog-post feed URL:
+
+
+def PrintAllPosts(blogger_service, blog_id):
+  feed = blogger_service.GetFeed('/feeds/' + blog_id + '/posts/default')
+
+  print feed.title.text
+  for entry in feed.entry:
+    print "\t" + entry.title.text
+    print "\t" + entry.content.text
+    print "\t" + entry.updated.text
+  print
+
+================================================================
+Retrieving posts using query parameters
+
+The Blogger Data API lets you request a set of entries that match specified criteria, such as requesting blog posts published or updated in a given date range. To do this, you create a Query instance and then call the Get() method.
+
+For example, to send a date-range query, set the published_min and published_min properties of the Query instance. The following code snippet prints the title and content of each blog post published between the given start time and end time
+
+
+def PrintPostsInDateRange(blogger_service, blog_id, start_time='2007-04-01', end_time='2007-04-25'):
+  query = service.Query()
+  query.feed = '/feeds/' + blog_id + '/posts/default'
+  query.published_min = start_time
+  query.published_max = end_time
+  feed = blogger_service.Get(query.ToUri())
+
+  print feed.title.text + " posts between " + start_time + " and " + end_time
+  for entry in feed.entry:
+    print "\t" + entry.title.text
+    print "\t" + entry.content.text
+    print "\t" + entry.updated.text
+  print
+
+===================================================================
+
+
+
+Updating posts
+
+To update an existing blog post, first you retrieve the entry you want to update, then you modify it, and then you send it to Blogger using the Put method. The following code snippet modifies the title of a blog entry, assuming that you've already retrieved the entry from the server.
+
+
+def UpdatePostTitle(blogger_service, entry_to_update, new_title='The REAL answer'):
+  entry_to_update.title = atom.Title('xhtml', new_title)
+  return blogger_service.Put(entry_to_update, entry_to_update.GetEditLink().href)
+
+
+
+===================================================================
+
+
+Deleting posts
+
+To delete a post, pass the post's edit URL to the Delete method on your GDataService object, like this:
+
+
+def DeletePost(blogger_service, edit_link_href):
+  blogger_service.Delete(edit_link_href)
+
+
+
+
+====================================================================
+
+
+
+Comments
+
+The Blogger Data API allows for creating, retrieving, and deleting comments. Updating comments is not supported (nor is it available in the web interface).
+Creating comments
+
+To post a comment, create a GDataEntry object and insert it as follows:
+
+
+
+
+def CreateComment(blogger_service, blog_id, post_id, comment_text='Mostly harmless'):
+  feed_uri = '/feeds/' + blog_id + '/' + post_id + '/comments/default'
+
+  entry = gdata.GDataEntry()
+  entry.content = atom.Content(content_type='xhtml', text=comment_text)
+  return blogger_service.Post(entry, feed_uri)
+
+
+
+====================================================================
+
+Retrieving comments
+
+You can retrieve the comments for a particular post from the post's comments feed URL:
+
+
+def PrintAllComments(blogger_service, blog_id, post_id):
+  feed_url = '/feeds/' + blog_id + '/' + post_id + '/comments/default'
+  feed = blogger_service.Get(feed_url)
+
+  print feed.title.text
+  for entry in feed.entry:
+    print "\t" + entry.title.text
+    print "\t" + entry.updated.text
+  print 
+
+
+Or you can get the comments from all posts by using the blog's comments feed URL:
+
+http://www.blogger.com/feeds/blogID/comments/default
+
+===================================================================
+Deleting comments
+
+To delete a comment, pass the comment's edit URL to the Delete method on your GDataService object like this:
+
+def DeleteComment(blogger_service, post_id, comment_id):
+  feed_url = '/feeds/' + post_id + '/comments/default/' + comment_id
+  blogger_service.Delete(feed_url)
+
+
+======================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Resource Manager
+    Documentation 
+
+Creating and Managing Projects
+
+Google Cloud Platform (GCP) projects form the basis for creating, enabling, and using all GCP services including managing APIs, enabling billing, adding and removing collaborators, and managing permissions for GCP resources.
+
+This page explains how to create and manage GCP projects using the Resource Manager API and the Google Cloud Platform Console.
+Before you begin
+
+Read about the project resource in the Resource Hierarchy overview.
+Creating a project
+
+To create a project, you must have the resourcemanager.projects.create permission. When an organization is created, the entire domain has the Project Creator role, which includes that permission. For information on how to grant individuals the Project Creator role and limit organization-wide access, see the Managing Default Organization Roles page.
+
+You can create a new project using the GCP Console or the projects.create() method.
+Console gcloud API PYTHON
+
+You can't use certain words in the project ID when you create a new project with the projects.create() method. Some examples include ssl and google. When you use a restricted word, the request will return with an INVALID_ARGUMENT error.
+
+The below request only creates a project, and does not associate it automatically with a billing account. Use the projects.updateBillingInfo method to set or update the billing account associated with a project.
+
+Create Project Request:
+
+POST https://cloudresourcemanager.googleapis.com/v1/projects/
+Authorization: *************
+Content-Type: application/json
+
+{
+    "projectId": "our-project-123",
+    "name": "my project",
+    "labels": {
+      "mylabel": "prod"
+    }
+}
+
+Create Project Response:
+
+{
+    "name": "operations/pc.123456789",
+}
+
+Get Operation Request:
+
+GET https://cloudresourcemanager.googleapis.com/v1/operations/pc.123456789
+Authorization: *************
+Content-Type: application/json
+
+Get Operation Response:
+
+{
+    "name": "operations/pc.123456789",
+    "done": true,
+    "response": {
+        "@type": "type.googleapis.com/google.cloudresourcemanager.v1.Project",
+        "projectNumber": "464036093014",
+        "projectId": "our-project-123",
+        "lifecycleState": "ACTIVE",
+        "name": "my project",
+        "labels": {
+        "mylabel": "prod"
+        },
+    "createTime": "2016-01-07T21:59:43.314Z"
+    }
+}
+
+Managing project quotas
+
+If you have fewer than 30 projects remaining in your quota, a notification will display the number of projects remaining in your quota on the New Project page. Projects that users have soft deleted will count against your quota until those projects have been fully deleted after 30 days.
+
+To request additional capacity for projects in your quota, see the Request Billing Quota Increase support page. More information about quotas and why they are used can be found at the Free Trial Project Quota Requests support page.
+Identifying projects
+
+To interact with GCP resources, you must provide the identifying project information for every request. A project can be identified in the following ways:
+
+    Project ID: the customized name you chose when you created the project, or when you activated an API that required you to create a project ID. Note that you can't reuse the project ID of a deleted project.
+    Project number: a number that's automatically generated by the server and assigned to your project.
+
+To get the project ID and the project number:
+
+    Go to the Manage resources page in the GCP Console.
+    Select your project.
+
+Both the project ID and project number are displayed on the project Dashboard Project info card:
+
+A project ID is different from a project name. The project name is a human-readable way to identify your projects, but it isn't used by any Google APIs. In the above example, the project name is My Sample Project and the project ID is my-sample-project-191923.
+
+The project ID is generated from the project name you enter when you create the project in the Google Cloud Platform Console. Certain words are restricted from use in project IDs. If you use restricted words in the project name, such as google or ssl, the generated project ID will not include these words. This will not affect the project name.
+
+The project number and project ID are unique across Google Cloud Platform. If another user owns a project ID for their project, you won't be able to use the same project ID.
+
+When you choose your project ID (or any resource names), don't include any sensitive information in your names.
+Get an existing project
+
+You can get an existing project using the GCP Console or the projects.get() method.
+Console gcloud API PYTHON
+
+Request:
+
+GET
+https://cloudresourcemanager.google
+
+
+
+
