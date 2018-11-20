@@ -3,7 +3,7 @@
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import sys
-
+import webscrape
 from oauth2client import client
 from googleapiclient import sample_tools
 
@@ -33,8 +33,8 @@ def main(argv):
       body = {
         "kind": "blogger#post",
         "id": "3466134283062417425",
-        "title": "posted via python 2 ",
-        "content":"<div>hello world test working</div>"
+        "title": webscrape.news(),
+        "content":"<div><b>It's Working Fine.. Seriously..</b></div>"
         }
       insert = posts.insert(blogId='3466134283062417425', body=body)
       posts_doc = insert.execute()

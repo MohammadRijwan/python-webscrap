@@ -25,9 +25,9 @@ def news():
 	#now we want to print only the text part of the anchor. 
 	#find all the elements of a, i.e anchor 
 		for i in l.findAll("div",{"class":"media-heading headingfour"}): 
-			print("--------------------------------------")
-			print(i.find("a")) 
-			print("--------------------------------------")
+			#print("--------------------------------------")
+			return (i.find("a").text) 
+			#print("--------------------------------------")
 	else: 
 		print("Error")
 
